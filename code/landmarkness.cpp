@@ -110,36 +110,29 @@ main (int argc, char** argv)
 
   
   // ---------------------------------------------------------------------
-  // Create the FPFH estimation class, and pass the input dataset+normals to it
-  // http://pointclouds.org/documentation/tutorials/fpfh_estimation.php
-    std::cout << "computing FPFH... " << std::endl;
+  // compute the fpfh descriptors
+  std::cout << "computing FPFH... " << std::endl;
   time_start = chrono::high_resolution_clock::now();
 
-    // CHOOSE OMP OR NORMAL
+  // CHOOSE OMP OR NORMAL
   #ifdef omp
-   pcl::FPFHEstimationOMP<pcl::PointXYZ, pcl::Normal, pcl::FPFHSignature33> fpfh;
-   fpfh.setNumberOfThreads(8);
- #else
-  pcl::FPFHEstimation<pcl::PointXYZ, pcl::Normal, pcl::FPFHSignature33> fpfh;
+    pcl::FPFHEstimationOMP<pcl::PointXYZ, pcl::Normal, pcl::FPFHSignature33> fpfh;
+    fpfh.setNumberOfThreads(8);
+  #else
+    pcl::FPFHEstimation<pcl::PointXYZ, pcl::Normal, pcl::FPFHSignature33> fpfh;
   #endif
 
   fpfh.setInputCloud (cloud);
   // alternatively, if cloud is of tpe PointNormal, do fpfh.setInputNormals (cloud);
   fpfh.setInputNormals (cloudWithNormals);
 
-  // Create an empty kdtree representation, and pass it to the FPFH estimation object.
-  // Its content will be filled inside the object, based on the given input dataset (as no other search surface is given).
-  //pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>); 
   fpfh.setSearchMethod (tree);
-
-  // Output datasets
   pcl::PointCloud<pcl::FPFHSignature33>::Ptr fpfhs (new pcl::PointCloud<pcl::FPFHSignature33> ());
 
-  // Use all neighbors in a sphere of radius 5cm
   // IMPORTANT: the radius used here has to be larger than the radius used to estimate the surface normals!!!
   fpfh.setRadiusSearch (fpfh_support);
 
-  // Compute the features
+  // compute the features
   fpfh.compute (*fpfhs);
   std::cout << "done compusting " << fpfhs->points.size() << " feature descriptors" << std::endl;
   time_stop = chrono::high_resolution_clock::now();
@@ -159,10 +152,8 @@ main (int argc, char** argv)
   
   // ---------------------------------------------------------------------
   // set up kdtree search for these points
-
   cout << "computing knn neighbors" << endl;
   time_start = chrono::high_resolution_clock::now();
-
   
   std::vector<float> pointLandmark(fpfhs->points.size(), 0.0f);
   pcl::KdTreeFLANN<pcl::FPFHSignature33> kdtree;
@@ -177,12 +168,6 @@ main (int argc, char** argv)
   int kdtree_knn_total = 0;
   float landmark_max = 0;
   float landmark_min = 10^6;
-
-
-  //#pragma omp parallel for
-  //for (size_t fpfh_idx = 0;  fpfh_idx< 20;  fpfh_idx++)
-  //  std::cout << fpfh_idx << std::endl;
-  
 
   //#pragma omp parallel for
   for (size_t fpfh_idx = 0;  fpfh_idx< fpfhs->points.size();  fpfh_idx++)

@@ -7,24 +7,22 @@ This is only the initial score, the refined score code is pending...
 N. Kobyshev, H. Riemenschneider, A. Bodis-Szomoru, L. Van Gool
 http://varcity.eu/publication.html
 
+The code takes a 3D pointcloud (.ply) and calculates the Kobyshev score
+as described in Eq. 2 to measure the 3D saliency.
+The output are the KNNs, the score, a visualization and the features.
+
 /// requirements
-* PCL v1.7
-* OMP [optional]
+ PCL v1.7
+ OMP [optional]
 
 /// compile.sh
-
-mkdir build
-cd build
-cmake ..
-make -j8
+  mkdir build
+  cd build
+  cmake ..
+  make -j8
 
 /// run.sh
-build/landmarkness ../data/fraumunster.ply
-
-
-
-
-
+  build/landmarkness ../data/fraumunster.ply
 
 /// example output:
   Reading ../data/fraumunster.ply
